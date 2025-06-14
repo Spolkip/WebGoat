@@ -65,19 +65,21 @@ public class CommentsCache {
    * progress etc). In real life the XmlMapper bean defined above will be used automatically and the
    * Comment class can be directly used in the controller method (instead of a String)
    */
-  protected Comment parseXml(String xml, boolean securityEnabled)
-      throws XMLStreamException, JAXBException {
+protected Comment parseXml(String xml, boolean securityEnabled)
+        throws XMLStreamException, JAXBException {
     var jc = JAXBContext.newInstance(Comment.class);
     var xif = XMLInputFactory.newInstance();
 
-    // TODO fix me disabled for now.
-    xif.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
-      xif.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant	    xif.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); // Compliant
-    var xsr = xif.createXMLStreamReader(new StringReader(xml));
+    // Always enforce secure XML parsing
+    xif.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+    xif.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+    xif.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+    xif.setProperty("javax.xml.stream.isSupportingExternalEntities", false);
 
+    var xsr = xif.createXMLStreamReader(new StringReader(xml));
     var unmarshaller = jc.createUnmarshaller();
     return (Comment) unmarshaller.unmarshal(xsr);
-  }
+}
 
   public void addComment(Comment comment, WebGoatUser user, boolean visibleForAllUsers) {
     comment.setDateTime(LocalDateTime.now().format(fmt));
