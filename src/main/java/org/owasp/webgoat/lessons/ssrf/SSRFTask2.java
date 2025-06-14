@@ -31,21 +31,25 @@ public class SSRFTask2 implements AssignmentEndpoint {
   }
 
   protected AttackResult furBall(String url) {
-    if (url.matches("http://ifconfig\\.pro")) {
-      String html;
-      try (InputStream in = new URL(url).openStream()) {
-        html =
-            new String(in.readAllBytes(), StandardCharsets.UTF_8)
-                .replaceAll("\n", "<br>"); // Otherwise the \n gets escaped in the response
-      } catch (MalformedURLException e) {
-        return getFailedResult(e.getMessage());
-      } catch (IOException e) {
-        // in case the external site is down, the test and lesson should still be ok
-        html =
-            "<html><body>Although the http://ifconfig.pro site is down, you still managed to solve"
-                + " this exercise the right way!</body></html>";
+    try {
+      URL parsedUrl = new URL(url);
+      String host = parsedUrl.getHost();
+      if ("ifconfig.pro".equals(host)) {
+        String html;
+        try (InputStream in = parsedUrl.openStream()) {
+          html =
+              new String(in.readAllBytes(), StandardCharsets.UTF_8)
+                  .replaceAll("\n", "<br>"); // Otherwise the \n gets escaped in the response
+        } catch (IOException e) {
+          // in case the external site is down, the test and lesson should still be ok
+          html =
+              "<html><body>Although the http://ifconfig.pro site is down, you still managed to solve"
+                  + " this exercise the right way!</body></html>";
+        }
+        return success(this).feedback("ssrf.success").output(html).build();
       }
-      return success(this).feedback("ssrf.success").output(html).build();
+    } catch (MalformedURLException e) {
+      return getFailedResult("Invalid URL format: " + e.getMessage());
     }
     var html = "<img class=\"image\" alt=\"image post\" src=\"images/cat.jpg\">";
     return getFailedResult(html);
