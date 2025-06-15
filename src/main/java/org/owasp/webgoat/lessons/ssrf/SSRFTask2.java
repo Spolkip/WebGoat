@@ -34,12 +34,12 @@ public class SSRFTask2 implements AssignmentEndpoint {
     try {
       URL parsedUrl = new URL(url);
       String host = parsedUrl.getHost();
-      if ("ifconfig.pro".equals(host)) {
+    String protocol = parsedUrl.getProtocol();
+    if ("ifconfig.pro".equals(host) && "https".equalsIgnoreCase(protocol)) {
         String html;
         try (InputStream in = parsedUrl.openStream()) {
-          html =
-              new String(in.readAllBytes(), StandardCharsets.UTF_8)
-                  .replaceAll("\n", "<br>"); // Otherwise the \n gets escaped in the response
+            html = new String(in.readAllBytes(), StandardCharsets.UTF_8)
+                    .replaceAll("\n", "<br>");
         } catch (IOException e) {
           // in case the external site is down, the test and lesson should still be ok
           html =
