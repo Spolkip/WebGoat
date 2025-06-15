@@ -32,22 +32,23 @@ public class SSRFTask2 implements AssignmentEndpoint {
 
   protected AttackResult furBall(String url) {
     try {
-      URL parsedUrl = new URL(url);
-      String host = parsedUrl.getHost();
-    String protocol = parsedUrl.getProtocol();
-    if ("ifconfig.pro".equals(host) && "https".equalsIgnoreCase(protocol)) {
-        String html;
-        try (InputStream in = parsedUrl.openStream()) {
-            html = new String(in.readAllBytes(), StandardCharsets.UTF_8)
-                    .replaceAll("\n", "<br>");
-        } catch (IOException e) {
-          // in case the external site is down, the test and lesson should still be ok
-          html =
-              "<html><body>Although the http://ifconfig.pro site is down, you still managed to solve"
-                  + " this exercise the right way!</body></html>";
-        }
-        return success(this).feedback("ssrf.success").output(html).build();
+      // Whitelist of allowed URLs
+      String allowedUrl = "https://ifconfig.pro";
+      if (!allowedUrl.equals(url)) {
+        return getFailedResult("URL is not allowed.");
       }
+      URL parsedUrl = new URL(url);
+      String html;
+      try (InputStream in = parsedUrl.openStream()) {
+          html = new String(in.readAllBytes(), StandardCharsets.UTF_8)
+                  .replaceAll("\n", "<br>");
+      } catch (IOException e) {
+        // in case the external site is down, the test and lesson should still be ok
+        html =
+            "<html><body>Although the http://ifconfig.pro site is down, you still managed to solve"
+                + " this exercise the right way!</body></html>";
+      }
+      return success(this).feedback("ssrf.success").output(html).build();
     } catch (MalformedURLException e) {
       return getFailedResult("Invalid URL format: " + e.getMessage());
     }
