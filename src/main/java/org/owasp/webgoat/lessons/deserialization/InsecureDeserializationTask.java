@@ -30,19 +30,20 @@ import org.springframework.web.bind.annotation.RestController;
 })
 public class InsecureDeserializationTask implements AssignmentEndpoint {
 
-    private static class DeserializationFilter implements ObjectInputFilter {
-        @Override
-        public Status checkInput(FilterInfo filterInfo) {
-            Class<?> clazz = filterInfo.serialClass();
-            if (clazz != null) {
-                return clazz.getName().equals("org.dummy.insecure.framework.VulnerableTaskHolder") 
-                    ? Status.ALLOWED 
-                    : Status.REJECTED;
+private static class DeserializationFilter implements ObjectInputFilter {
+    @Override
+    public Status checkInput(FilterInfo filterInfo) {
+        Class<?> clazz = filterInfo.serialClass();
+        if (clazz != null) {
+            // Only allow the exact class, not subclasses, arrays, or primitives
+            if (clazz.getName().equals("org.dummy.insecure.framework.VulnerableTaskHolder")) {
+                return Status.ALLOWED;
             }
-            return Status.UNDECIDED;
+            return Status.REJECTED;
         }
+        return Status.UNDECIDED;
     }
-
+}
     @PostMapping("/InsecureDeserialization/task")
     @ResponseBody
     public AttackResult completed(@RequestParam String token) throws IOException {
