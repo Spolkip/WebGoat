@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.WildcardTypePermission;
 
 @RestController
 @AssignmentHints({"vulnerable.hint"})
@@ -27,6 +29,11 @@ public class VulnerableComponentsLesson implements AssignmentEndpoint {
     xstream.setClassLoader(Contact.class.getClassLoader());
     xstream.alias("contact", ContactImpl.class);
     xstream.ignoreUnknownElements();
+    // Secure XStream: Only allow ContactImpl for deserialization
+    xstream.addPermission(NoTypePermission.NONE); // Deny all types by default
+    xstream.addPermission(new WildcardTypePermission(new String[] {
+        "org.owasp.webgoat.lessons.vulnerablecomponents.ContactImpl"
+    })); // Only allow ContactImpl
     Contact contact = null;
 
     try {
